@@ -1,0 +1,49 @@
+ from twilio.rest import Client
+import time
+import random
+
+account_sid = 'AC61f404fa891c9605b9494037b7b9dde2'
+auth_token = '704a39b7a63bf35e2ee3abaa492d0197'
+client = Client ( account_sid , auth_token )
+
+def make_otp ():  
+    otp = ""
+    for i in range (6) :
+        otp += str( random.randint (0 ,9))
+    return otp
+
+if __name__ == "__main__":
+    
+    otp = make_otp ()
+
+    body_string = "Your OTP for WMDS Assignment 6 is " + otp
+    send_phone_number = '9479818333'
+    
+    try :
+        send_phone_number = int( input ("Enter the phone number you want to send sms to: "))
+        while len (str( send_phone_number )) != 10:
+            print ("Invalid phone number. Please try again.")
+            send_phone_number = int( input ("Enter the phone number you want to send sms to: "))
+    except ValueError :
+        print ("Invalid phone number. Please try again.")
+        send_phone_number = int( input ("Enter the phone number you want to send sms to: "))
+
+    message = client.messages.create (
+    from_ = '+19152093761',
+    body = body_string ,
+    to = '+91' + str( send_phone_number )
+    )
+    print ( message.sid)
+    start_time = time.time ()
+    user_otp = input ("Enter the otp: ")
+    
+    if user_otp == otp:
+        end_time = time.time ()
+        time_taken = end_time - start_time
+        print ("Time taken to enter the OTP is " + str( time_taken ) + " seconds.")
+        if time_taken > 60:
+            print ("Time taken to enter the OTP is more than 60 seconds. Please try again.")
+            user_otp = input ("Enter the otp: ")
+    if user_otp != otp:
+        print ("Wrong OTP. Please try again.")
+        user_otp = input ("Enter the otp: ") 

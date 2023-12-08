@@ -1,0 +1,143 @@
+ package com.example.myapplication;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class MainActivity extends AppCompatActivity {
+
+    ActivityResultLauncher<String[]> mPermissionResultLauncher;
+    private boolean isReadPermissionGranted = false;
+    private boolean isLocationPermissionGranted = false;
+    private boolean isCameraPermissionGranted = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mPermissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
+            @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+            @Override
+            public void onActivityResult(Map<String, Boolean> result) {
+                // Check the result of each permission
+                if (result.get(Manifest.permission.READ_MEDIA_IMAGES) != null) {
+                    isReadPermissionGranted = Boolean.TRUE.equals(result.get(Manifest.permission.READ_MEDIA_IMAGES));
+                }
+                if (result.get(Manifest.permission.ACCESS_FINE_LOCATION) != null) {
+                    isLocationPermissionGranted = Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_FINE_LOCATION));
+                }
+                if (result.get(Manifest.permission.CAMERA) != null) {
+                    isCameraPermissionGranted = Boolean.TRUE.equals(result.get(Manifest.permission.CAMERA));
+                }
+
+                // Check if all required permissions are granted
+                if (!isReadPermissionGranted || !isLocationPermissionGranted || !isCameraPermissionGranted) {
+                    // Permissions are not granted, show a message to the user
+                    Toast.makeText(MainActivity.this, "Please grant all required permissions to access the application.", Toast.LENGTH_SHORT).show();
+                    // You can finish the activity or take other appropriate actions here
+                    finish();
+                }  // All permissions are granted, continue with the application logic
+
+            }
+        });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermission();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    private void requestPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+                isReadPermissionGranted = true;
+            }
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                isLocationPermissionGranted = true;
+            }
+            if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                isCameraPermissionGranted = true;
+            }
+            List<String> listPermissionsNeeded = new ArrayList<>();
+            if (!isReadPermissionGranted) {
+                listPermissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES);
+            }
+            if (!isLocationPermissionGranted) {
+                listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+            if (!isCameraPermissionGranted) {
+                listPermissionsNeeded.add(Manifest.permission.CAMERA);
+            }
+
+            if (!listPermissionsNeeded.isEmpty()) {
+                mPermissionResultLauncher.launch(listPermissionsNeeded.toArray(new String[0]));
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ <?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication"
+        tools:targetApi="31">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest> 
